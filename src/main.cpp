@@ -1,7 +1,8 @@
 #include <Arduino.h>
 #include <WiFiManager.h>
+#include "FlashManager.h"
 
-#define UUID PROGMEM "GreenThings_01"
+#define UUID PROGMEM "Estufa Inteligente"
 #define PASS PROGMEM "xyzlmnop"
 #define STYL PROGMEM "<style>body{background-color:#a8e063}button{background-color:#56ab2f}</style>"
 
@@ -12,6 +13,8 @@ String mqttPort;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  setupFlash();
+  
   wifiManager = new WiFiManager();
   wifiManager->setCustomHeadElement(STYL);
 
@@ -33,6 +36,6 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   Serial.println("Connected!");
-  Serial.printf("Broker configured on: %s:%s\n", mqttIP, mqttPort);
+  Serial.printf("Broker configured on: %s port: %s\n", mqttIP.c_str(), mqttPort.c_str());
   delay(5000);
 }
