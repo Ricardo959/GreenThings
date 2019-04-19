@@ -2,10 +2,10 @@
 #define FlashManager_h
 
 #include <Arduino.h>
+#include <WiFiManager.h>
 #include <EEPROM.h>
 
-#define EEPROM_SIZE 20
-#define NULL __null
+#define EEPROM_SIZE 21
 
 void setupFlash();
 
