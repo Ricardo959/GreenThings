@@ -60,8 +60,7 @@ void setup() {
   Serial.println("Connecting to Broker ...");
   WiFiClient wifiClient;
   PubSubClient pubSubClient(wifiClient);
-  //client.setServer(getIP().c_str(), getPort().toInt());
-  pubSubClient.setServer({192, 168, 0, 107}, flash::getPort().toInt());
+  pubSubClient.setServer(flash::getIP().c_str(), flash::getPort().toInt());
   for (uint8_t attempt = 1; attempt <= 3; attempt++) {
     pubSubClient.connect(MAC.c_str(), USER, PASS);
     if (pubSubClient.connected()) break;
@@ -80,6 +79,7 @@ void setup() {
   // Configuração da primeira conexão:
   if (newServer) {
     Serial.println("New connection detected! Requesting server data ...");
+
     newServer = false;
   }
 
