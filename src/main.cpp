@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFiManager.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 #include "WiFi.h"
 #include "Flash.h"
 #include "Utilities.h"
@@ -118,9 +119,10 @@ void setup()
 	if (newServer) // Configuração da primeira conexão ao servidor:
 	{
 		Serial.println("New connection detected! Requesting server data ...");
-		String json = "{\"mac\":";
-		json.concat(MAC);
-		json.concat("}");
+		DynamicJsonDocument doc(1024);
+		doc["mac"] = MAC;
+		String json;
+		serializeJson(doc, json);
 		bool subscribed = pubSubClient.subscribe("/device/response", 2);		  // QoS = 2
 		bool published = pubSubClient.publish("/device/get", json.c_str(), true); // Retained = true
 		if (subscribed && published)
