@@ -9,38 +9,37 @@
 #define DHT_PIN 4
 #define PRECIP_PIN 13
 
-class Controller {
+class Controller
+{
+  public:
+	// Sensores:
+	bool has_dht11;
+	bool has_precipitation_module;
+	bool has_LDR;
+	// Atuadores:
+	bool has_solenoid_valve;
+	bool has_cover_actuator;
+	bool has_shade_actuator;
 
-    public:
-        // Sensores:
-        bool has_dht11;
-        bool has_precipitation_module;
-        bool has_LDR;
-        // Atuadores:
-        bool has_solenoid_valve;
-        bool has_cover_actuator;
-        bool has_shade_actuator;
+	Controller();
 
-        Controller();
+	Controller(
+		bool has_dht11,
+		bool has_precipitation_module,
+		bool has_LDR,
+		bool has_solenoid_valve,
+		bool has_cover_actuator,
+		bool has_shade_actuator);
 
-        Controller(
-            bool has_dht11,
-            bool has_precipitation_module,
-            bool has_LDR,
-            bool has_solenoid_valve,
-            bool has_cover_actuator,
-            bool has_shade_actuator);
+	String getSensorData();
 
-        String getSensorData();
+  private:
+	DHT *dht;
 
-    private:
-
-        DHT* dht;
-
-        int dht11_temperature;
-        int dht11_humidity;
-        int precipitation_value;
-        int LDR_value;
+	int dht11_temperature;
+	int dht11_humidity;
+	int precipitation_value;
+	int LDR_value;
 };
 
 #endif

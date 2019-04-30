@@ -1,6 +1,7 @@
 #include "Controller.h"
 
-Controller::Controller() {
+Controller::Controller()
+{
     this->has_dht11 = false;
     this->has_precipitation_module = false;
     this->has_LDR = false;
@@ -11,13 +12,14 @@ Controller::Controller() {
 }
 
 Controller::Controller(
-            bool has_dht11,
-            bool has_precipitation_module,
-            bool has_LDR,
-            bool has_solenoid_valve,
-            bool has_cover_actuator,
-            bool has_shade_actuator) {
-    
+    bool has_dht11,
+    bool has_precipitation_module,
+    bool has_LDR,
+    bool has_solenoid_valve,
+    bool has_cover_actuator,
+    bool has_shade_actuator)
+{
+
     this->has_dht11 = has_dht11;
     this->has_precipitation_module = has_precipitation_module;
     this->has_LDR = has_LDR;
@@ -27,14 +29,16 @@ Controller::Controller(
     this->dht = new DHT(DHT_PIN, DHT_TYPE);
 }
 
-String Controller::getSensorData() {
-	dht->begin();
-	
+String Controller::getSensorData()
+{
+    dht->begin();
+
     String json = "[";
 
-    if (has_dht11) {
-        dht11_temperature = (int) dht->readTemperature();
-        dht11_humidity = (int) dht->readHumidity();
+    if (has_dht11)
+    {
+        dht11_temperature = (int)dht->readTemperature();
+        dht11_humidity = (int)dht->readHumidity();
         json.concat("{\"type\":\"t\",\"value\":");
         json.concat(dht11_temperature);
         json.concat("},{\"type\":\"h\",\"value\":");
@@ -42,14 +46,16 @@ String Controller::getSensorData() {
         json.concat("},");
     }
 
-    if (has_precipitation_module) {
+    if (has_precipitation_module)
+    {
         precipitation_value = map(analogRead(PRECIP_PIN), 1024, 0, 0, 100);
-        if (precipitation_value < 0) precipitation_value = 0;
+        if (precipitation_value < 0)
+            precipitation_value = 0;
         json.concat("{\"type\":\"p\",\"value\":");
         json.concat(precipitation_value);
         json.concat("},");
     }
-    
+
     json.remove(json.length() - 1);
     json.concat("]");
     return json;
