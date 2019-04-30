@@ -43,7 +43,7 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 		Serial.printf("Response recieved: %s\n", message);
 		hasResponse = true;
 
-		if (message != "null" && message != "error")
+		if (strcmp(message, "null") + strcmp(message, "error") > 0)
 		{
 			newServer = false;
 			
