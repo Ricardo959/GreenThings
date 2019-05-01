@@ -41,15 +41,28 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 			message[i] = (char)payload[i];
 		}
 
-		Serial.printf("Response recieved: %s\n", message);
+		Serial.println("Response recieved");
 		hasResponse = true;
 
 		if (strcmp(message, "null") + strcmp(message, "error") > 0)
 		{
 			newServer = false;
-			
-			// TODO: Salvar Regras
+			StaticJsonDocument<1024> doc;
+			deserializeJson(doc, message);
+
+			JsonArray actuators = doc["actuators"].as<JsonArray>();
+			if (actuators.size() > 0)
+			{
+				Serial.printf("Saving rules: %s\n", message);
+				String rules;
+				serializeJson(actuators, rules);
+				flash::saveRules(rules);
+				return;
+			}
+			Serial.println("No rules found");
+			return;
 		}
+		Serial.println("Response is empty");
 	}
 }
 
@@ -127,13 +140,12 @@ void setup()
 		bool published = pubSubClient.publish("/device/get", json.c_str(), true); // Retained = true
 		if (subscribed && published)
 		{
-			Serial.println("Mac address sent, waiting for response ...");
-			for (uint8_t i = 0; i < 50; i++) // Espera 5 segundos pela resposta:
+			Serial.println("Mac address sent, waiting 5 seconds for response ...");
+			for (uint8_t i = 0; i < 50; i++) // Aguarda 5 segundos pela resposta:
 			{
-				pubSubClient.loop();
-				if (!newServer)
-					break;
 				delay(100);
+				pubSubClient.loop();
+				if (!newServer) break;
 			}
 			if (hasResponse)
 			{
@@ -182,7 +194,6 @@ void setup()
 	{
 		Serial.printf("Publish failed.");
 	}
-	delay(1000);
 
 	// Desconectando do Broker:
 	pubSubClient.disconnect();

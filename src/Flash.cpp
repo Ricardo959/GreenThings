@@ -26,3 +26,14 @@ String flash::getPort()
 {
     return EEPROM.readString(16);
 }
+
+void flash::saveRules(String rules)
+{
+    EEPROM.writeString(22, rules);
+    EEPROM.commit();
+}
+
+String flash::getRules()
+{
+    return EEPROM.readString(22);
+}
