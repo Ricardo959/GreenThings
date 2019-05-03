@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
+#include <ArduinoJson.h>
 
 #define DHT_TYPE DHT11
 #define DHT_PIN 4
@@ -21,9 +22,12 @@ class Controller
 	bool has_cover_actuator;
 	bool has_shade_actuator;
 
-	Controller();
+	String id;
+
+	Controller(String id);
 
 	Controller(
+		String id,
 		bool has_dht11,
 		bool has_precipitation_module,
 		bool has_LDR,
@@ -34,6 +38,7 @@ class Controller
 	String getSensorData();
 
   private:
+
 	DHT *dht;
 
 	int dht11_temperature;

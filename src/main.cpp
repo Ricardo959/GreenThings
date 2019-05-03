@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <WiFiManager.h>
-#include <PubSubClient.h>
+#include <PubSubClient.h> // Increase the MQTT_MAX_PACKET_SIZE to 1024 in PubSubClient.h
 #include <ArduinoJson.h>
 #include "WiFi.h"
 #include "Flash.h"
@@ -13,7 +13,7 @@
 #define HTMLHEADER PROGMEM "<style>h1,h3{color:#ffffff}body{background-color:#339933}button{background-color:#6bdb87}</style>"
 
 RTC_DATA_ATTR uint8_t SLEEP_TIME = 60; // 60 segundos.
-bool newServer = false;
+bool newServer = false; // Change to false on final version
 bool hasResponse = false;
 uint8_t macaddress[6];
 
@@ -35,16 +35,16 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 	// Quando uma mensagem chega no broker:
 	if (String(topic) == "/device/response")
 	{
-		char message[length];
+		String message;
 		for (unsigned int i = 0; i < length; i++)
 		{
-			message[i] = (char)payload[i];
+			message += (char)payload[i];
 		}
 
-		Serial.println("Response recieved");
+		Serial.printf("Response recieved: %s\n", message.c_str());
 		hasResponse = true;
 
-		if (strcmp(message, "null") + strcmp(message, "error") > 0)
+		if (message != "null" && message != "error")
 		{
 			newServer = false;
 			StaticJsonDocument<1024> doc;
@@ -53,9 +53,9 @@ void mqttCallback(char *topic, byte *payload, unsigned int length)
 			JsonArray actuators = doc["actuators"].as<JsonArray>();
 			if (actuators.size() > 0)
 			{
-				Serial.printf("Saving rules: %s\n", message);
 				String rules;
 				serializeJson(actuators, rules);
+				Serial.printf("Saving rules: %s\n", rules.c_str());
 				flash::saveRules(rules);
 				return;
 			}
@@ -117,7 +117,7 @@ void setup()
 		if (pubSubClient.connected())
 			break;
 		Serial.printf("Connection failed. Attempt: %d/3\n", attempt);
-		delay(1000);
+		delay(500);
 	}
 	if (!pubSubClient.connected()) // Caso sem conexão ao Broker:
 	{
@@ -136,7 +136,7 @@ void setup()
 		doc["mac"] = MAC;
 		String json;
 		serializeJson(doc, json);
-		bool subscribed = pubSubClient.subscribe("/device/response", 2);		  // QoS = 2
+		bool subscribed = pubSubClient.subscribe("/device/response");
 		bool published = pubSubClient.publish("/device/get", json.c_str(), true); // Retained = true
 		if (subscribed && published)
 		{
@@ -151,42 +151,42 @@ void setup()
 			{
 				if (newServer)
 				{
-					String registerData = "\"sensors\": [ { \"type\": \"h\" }, { \"type\": \"t\" }, { \"type\": \"p\" } ], \"actuators\": [ { \"type\": \"v\" } ]";
-					Serial.println("Sending registration request ...");
-					if (pubSubClient.publish("/device/new", utils::publishJSON(MAC, registerData).c_str()), true)
+					String registerData = "{\"mac\": \"1012109628\", \"sensors\": [ { \"type\": \"h\" }, { \"type\": \"t\" }, { \"type\": \"p\" } ], \"actuators\": [ { \"type\": \"v\" } ] }";
+					Serial.printf("Sending registration request: %s\n", registerData.c_str());
+					if (pubSubClient.publish("/device/new", registerData.c_str()), true)
 					{
 						Serial.println("Registration sent.");
 					}
 					else
 					{
-						Serial.printf("Registration failed.");
+						Serial.println("Request failed.");
 						reset();
 					}
 				}
 			}
 			else
 			{
-				Serial.printf("No response received.");
+				Serial.println("No response received.");
 				reset();
 			}
 		}
 		else
 		{
-			Serial.printf("Connection to server failed.");
+			Serial.println("Connection to server failed.");
 			reset();
 		}
 	}
 
 	// Leitura dos sensores:
 	Serial.println("Reading sensor values ...");
-	Controller *controller = new Controller();
+	Controller *controller = new Controller(MAC);
 	controller->has_dht11 = true;
 	controller->has_precipitation_module = true;
 
 	// Enviando dados dos sensores:
 	String sensorData = controller->getSensorData();
 	Serial.printf("Sending sensor data: %s\n", sensorData.c_str());
-	if (pubSubClient.publish("/sensor/value", utils::publishJSON(MAC, sensorData).c_str()), true)
+	if (pubSubClient.publish("/sensor/value", sensorData.c_str()), true)
 	{
 		Serial.println("Data sent.");
 	}

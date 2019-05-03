@@ -1,7 +1,8 @@
 #include "Controller.h"
 
-Controller::Controller()
+Controller::Controller(String id)
 {
+    this->id = id;
     this->has_dht11 = false;
     this->has_precipitation_module = false;
     this->has_LDR = false;
@@ -12,6 +13,7 @@ Controller::Controller()
 }
 
 Controller::Controller(
+    String id,
     bool has_dht11,
     bool has_precipitation_module,
     bool has_LDR,
@@ -19,7 +21,7 @@ Controller::Controller(
     bool has_cover_actuator,
     bool has_shade_actuator)
 {
-
+    this->id = id;
     this->has_dht11 = has_dht11;
     this->has_precipitation_module = has_precipitation_module;
     this->has_LDR = has_LDR;
@@ -33,30 +35,36 @@ String Controller::getSensorData()
 {
     dht->begin();
 
-    String json = "[";
+    DynamicJsonDocument doc(1024);
+    doc["mac"] = this->id;
+
+    JsonArray sensors = doc.createNestedArray("sensors");
 
     if (has_dht11)
     {
         dht11_temperature = (int)dht->readTemperature();
         dht11_humidity = (int)dht->readHumidity();
-        json.concat("{\"type\":\"t\",\"value\":");
-        json.concat(dht11_temperature);
-        json.concat("},{\"type\":\"h\",\"value\":");
-        json.concat(dht11_humidity);
-        json.concat("},");
+
+        JsonObject hSensor = sensors.createNestedObject();
+        hSensor["type"] = "t";
+        hSensor["value"] = dht11_temperature;
+
+        JsonObject tSensor = sensors.createNestedObject();
+        tSensor["type"] = "h";
+        tSensor["value"] = dht11_humidity;
     }
 
     if (has_precipitation_module)
     {
         precipitation_value = map(analogRead(PRECIP_PIN), 1024, 0, 0, 100);
-        if (precipitation_value < 0)
-            precipitation_value = 0;
-        json.concat("{\"type\":\"p\",\"value\":");
-        json.concat(precipitation_value);
-        json.concat("},");
+        if (precipitation_value < 0) precipitation_value = 0;
+
+        JsonObject sensor = sensors.createNestedObject();
+        sensor["type"] = "p";
+        sensor["value"] = precipitation_value;
     }
 
-    json.remove(json.length() - 1);
-    json.concat("]");
+    String json;
+    serializeJson(doc, json);
     return json;
 }

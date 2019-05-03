@@ -10,16 +10,6 @@ String utils::macToString(uint8_t macaddress[6]) {
     return String(mac);
 }
 
-String utils::publishJSON(String mac, String sensors) {
-    String json = "{";
-    json.concat("\"mac\":");
-    json.concat(mac);
-    json.concat(",\"sensors\":");
-    json.concat(sensors);
-    json.concat("}");
-    return json;
-}
-
 String utils::getValue(String data, char separator, int index) {
     int found = 0;
     int strIndex[] = { 0, -1 };

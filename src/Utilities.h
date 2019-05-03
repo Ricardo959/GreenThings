@@ -7,7 +7,6 @@
 namespace utils
 {
     String macToString(uint8_t macaddress[6]);
-    String publishJSON(String mac, String data);
     String getValue(String data, char separator, int index);
     uint8_t *stringToIP(String ip);
 }; // namespace utils
