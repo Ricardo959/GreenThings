@@ -2,13 +2,15 @@
 #define Controller_h
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
-#include <ArduinoJson.h>
+#include <Servo.h>
 
 #define DHT_TYPE DHT11
 #define DHT_PIN 4
 #define PRECIP_PIN 13
+#define VALVE_PIN 0
 
 class Controller
 {
@@ -37,14 +39,21 @@ class Controller
 
 	String getSensorData();
 
+	void actuate(String rules);
+
   private:
 
-	DHT *dht;
+	DHT* dht;
+	Servo* servo;
 
 	int dht11_temperature;
 	int dht11_humidity;
 	int precipitation_value;
-	int LDR_value;
+	int valve_value;
+	bool cover_state;
+	bool shade_state;
+
+	bool match(int value, int max, int min);
 };
 
 #endif

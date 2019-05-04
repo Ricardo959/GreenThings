@@ -13,7 +13,7 @@
 #define HTMLHEADER PROGMEM "<style>h1,h3{color:#ffffff}body{background-color:#339933}button{background-color:#6bdb87}</style>"
 
 RTC_DATA_ATTR uint8_t SLEEP_TIME = 60; // 60 segundos.
-bool newServer = false; // Change to false on final version
+bool newServer = true; // If false, updates once; if true, updates always
 bool hasResponse = false;
 uint8_t macaddress[6];
 
@@ -131,7 +131,7 @@ void setup()
 
 	if (newServer) // Configuração da primeira conexão ao servidor:
 	{
-		Serial.println("New connection detected! Requesting server data ...");
+		Serial.println("Requesting server data ...");
 		DynamicJsonDocument doc(1024);
 		doc["mac"] = MAC;
 		String json;
@@ -182,6 +182,7 @@ void setup()
 	Controller *controller = new Controller(MAC);
 	controller->has_dht11 = true;
 	controller->has_precipitation_module = true;
+	controller->has_solenoid_valve = true;
 
 	// Enviando dados dos sensores:
 	String sensorData = controller->getSensorData();
@@ -194,6 +195,10 @@ void setup()
 	{
 		Serial.printf("Publish failed.");
 	}
+
+	// Atuando nos atuadores:
+	Serial.println("Starting actuations ...");
+	controller->actuate(flash::getRules());
 
 	// Desconectando do Broker:
 	pubSubClient.disconnect();
