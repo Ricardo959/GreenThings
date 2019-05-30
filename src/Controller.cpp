@@ -110,21 +110,11 @@ void Controller::actuate(String rules)
             {
                 if (match(sensorValue, activation["max"].as<int>(), activation["min"].as<int>()))
                 {
-                    if (valve_value != 180)
-                    {
-                        valve_value = 180;
-                        servo->write(valve_value);
-                        delay(500);
-                    }
+                    valve_value = 180;
                 }
                 else
                 {
-                    if (valve_value != 0)
-                    {
-                        valve_value = 0;
-                        servo->write(valve_value);
-                        delay(500);
-                    }
+                    valve_value = 0;
                 }
                 Serial.printf("Solenoid valve -> ", valve_value);
             }
