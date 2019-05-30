@@ -101,46 +101,38 @@ void Controller::actuate(String rules)
         for (uint8_t j = 0; j < actuators[i]["activation"].size(); j++)
         {
             JsonObject activation = actuators[i]["activation"][j];
-            if (activation["fuzzyfy"] == 0)
-            {
-                int sensorValue = 0;
-                if (activation["sensor"] == "t") sensorValue = dht11_temperature; // Ativação conforme temperatura
-                else if (activation["sensor"] == "h") sensorValue = dht11_humidity; // Ativação conforme humidade
-                else if (activation["sensor"] == "p") sensorValue = precipitation_value; // Ativação conforme precipitação
+            int sensorValue = 0;
+            if (activation["sensor"] == "t") sensorValue = dht11_temperature; // Ativação conforme temperatura
+            else if (activation["sensor"] == "h") sensorValue = dht11_humidity; // Ativação conforme humidade
+            else if (activation["sensor"] == "p") sensorValue = precipitation_value; // Ativação conforme precipitação
 
-                if(actuators[i]["type"] == "v") // Possui valvula solenoide:
-                {
-                    Serial.printf("Solenoid valve: %d -> ", valve_value);
-                    if (match(sensorValue, activation["max"].as<int>(), activation["min"].as<int>()))
-                    {
-                        if (valve_value != 180)
-                        {
-                            valve_value = 180;
-                            servo->write(valve_value);
-                            delay(500);
-                        }
-                    }
-                    else
-                    {
-                        if (valve_value != 0)
-                        {
-                            valve_value = 0;
-                            servo->write(valve_value);
-                            delay(500);
-                        }
-                    }
-                    Serial.println(valve_value);
-                }
-                // else if(actuators[i]["type"] == "c")
-                // {
-                //     ...
-                // }
-                // ...
-            }
-            else
+            if(actuators[i]["type"] == "v") // Possui valvula solenoide:
             {
-                // Utiliza lógica fussy:
+                if (match(sensorValue, activation["max"].as<int>(), activation["min"].as<int>()))
+                {
+                    if (valve_value != 180)
+                    {
+                        valve_value = 180;
+                        servo->write(valve_value);
+                        delay(500);
+                    }
+                }
+                else
+                {
+                    if (valve_value != 0)
+                    {
+                        valve_value = 0;
+                        servo->write(valve_value);
+                        delay(500);
+                    }
+                }
+                Serial.printf("Solenoid valve -> ", valve_value);
             }
+            // else if(actuators[i]["type"] == "c")
+            // {
+            //     ...
+            // }
+            // ...
         }
     }
 }
